@@ -1,0 +1,9 @@
+{
+    "DangoFluidLeverageToken": {
+        "ETH 2x": "0xAbCd3c5E8aed3b8D8096f0F33c7aa1Cb5d555dfB",
+        "BTC 2x": "0x12b6DC6C41460994f0471F0A665BEBfc78F3F55c",
+        "ETH/BTC 2x": "0x0093660A2f58c0c38CE2ce0F894C86F9011478Ea",
+        "BTC/ETH 2x": "0x540fBC594C455A8aF6D238C16AF2511c37cc0E9B"
+    },
+    "DangoFlashloanAdapter": "0x0A796B0DC59324233AA2F4CE2e5fB74b81ff2301"
+}
