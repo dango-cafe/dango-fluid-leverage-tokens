@@ -74,7 +74,7 @@ library SafeERC20 {
     }
 }
 
-
+// Extended https://github.com/aave/protocol-v2/blob/master/contracts/protocol/libraries/types/DataTypes.sol
 library DataTypes {
     // refer to the whitepaper, section 1.1 basic concepts for a formal description of these properties.
     struct ReserveData {
@@ -119,14 +119,22 @@ library DataTypes {
         uint256 data;
     }
 
+    enum InterestRateMode {NONE, STABLE, VARIABLE}
+
+    /**
+     * @notice Shared Datatype for all Flashloan operations
+     */
     struct FlashloanData {
+        // Variable to indicate the type of operation needs to perform during the flashloan
         // opType: 0 = Rebalance Up, 1 = Rebalance Down, 2 = Deposit & 3 = Withdraw
         uint256 opType;
+        // Amount of collateral deposited by the user. Valid only `deposit` method. This needs to be deposited along with the flashloan swap
         uint256 userDepositAmt;
+        // Amount of flashloan taken
         uint256 flashAmt;
+        // Address of the flashloan token
         address flashAsset;
+        // Swap target token
         address targetAsset;
     }
-
-    enum InterestRateMode {NONE, STABLE, VARIABLE}
 }

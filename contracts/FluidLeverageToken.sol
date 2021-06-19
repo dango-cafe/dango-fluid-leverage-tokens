@@ -23,6 +23,9 @@ import { DangoMath } from "./utils/DangoMath.sol";
 /**
  * @title DangoFluidLeverageToken
  * @author Dango.Cafe
+ *
+ * Entry point contract for minting, burning & rebalancing of Fluid Leverage Token system
+ * Leverage position is rebalanced every 24 hours to the target leverage ratio
  */
 contract DangoFluidLeverageToken is Initializable, ERC20Upgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable, DangoMath {
   using SafeMathUpgradeable for uint256;
@@ -38,8 +41,8 @@ contract DangoFluidLeverageToken is Initializable, ERC20Upgradeable, OwnableUpgr
   uint8 private immutable debtDecimals;                                           // Collateral token decimals
   uint8 private immutable collDecimals;                                           // Debt token decimals
 
-  ILendingPoolAddressesProvider public immutable AAVE_ADDRESSES_PROVIDER;         // Address of Aave Lending Pool Address Provider
-  IProtocolDataProvider public immutable AAVE_DATA_PROVIDER;                      // Address of Aave Protocol Data Provider
+  ILendingPoolAddressesProvider public immutable AAVE_ADDRESSES_PROVIDER;         // Aave Lending Pool Address Provider instance
+  IProtocolDataProvider public immutable AAVE_DATA_PROVIDER;                      // Aave Protocol Data Provider instance
   IERC20 public immutable COLLATERAL_ASSET;                                       // Collateral Token Instance
   IERC20 public immutable DEBT_ASSET;                                             // Debt Token Instance
 

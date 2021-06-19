@@ -6,6 +6,13 @@ import { SafeMathUpgradeable } from "@openzeppelin/contracts-upgradeable/math/Sa
 import { IFlashLoanReceiver, ILendingPoolAddressesProvider, ILendingPool, IERC20 } from "./Interfaces.sol";
 import { SafeERC20 } from "./Libraries.sol";
 
+
+/**
+ * @title FlashLoanReceiverBase
+ * @author Aave
+ *
+ * Flashloan receiver base, Must be inheritted by all contracts that use Aave Flashloans
+ */
 abstract contract FlashLoanReceiverBase is IFlashLoanReceiver {
     using SafeERC20 for IERC20;
     using SafeMathUpgradeable for uint256;

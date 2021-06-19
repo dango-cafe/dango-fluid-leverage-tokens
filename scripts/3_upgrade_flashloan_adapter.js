@@ -10,24 +10,24 @@ async function main() {
 
   const fluidLevProxy = '0xfe76398e095d30a4e76d31de9379bcab5773e237'
 
-  // const FlashloanAdapter = await ethers.getContractFactory("FlashloanAdapter")
-  // const flashloanAdapter = await FlashloanAdapter.deploy(
-  //   aaveLendingPoolAddressProvider,
-  //   aaveProtocolDataProvider,
-  //   sushiRouter,
-  //   300,
-  //   [fluidLevProxy]
-  // )
+  const FlashloanAdapter = await ethers.getContractFactory("DangoFlashloanAdapter")
+  const flashloanAdapter = await FlashloanAdapter.deploy(
+    aaveLendingPoolAddressProvider,
+    aaveProtocolDataProvider,
+    sushiRouter,
+    300,
+    [fluidLevProxy]
+  )
 
-  // await flashloanAdapter.deployed()
+  await flashloanAdapter.deployed()
 
-  // console.log("FlashloanAdapter deployed: ", flashloanAdapter.address)
+  console.log("FlashloanAdapter deployed: ", flashloanAdapter.address)
 
-  // await flashloanAdapter.__addTradePath(usdc, wbtc, [usdc, wbtc])
-  // await flashloanAdapter.__addTradePath(wbtc, usdc, [wbtc, usdc])
+  await flashloanAdapter.__addTradePath(usdc, wbtc, [usdc, wbtc])
+  await flashloanAdapter.__addTradePath(wbtc, usdc, [wbtc, usdc])
 
   await hre.run("verify:verify", {
-    address: '0x8b72841DcC545eaf9f12Eda071E8C44A45703574',
+    address: flashloanAdapter.address,
     constructorArguments: [
       aaveLendingPoolAddressProvider,
       aaveProtocolDataProvider,

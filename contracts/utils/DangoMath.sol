@@ -3,6 +3,12 @@ pragma solidity ^0.7.6;
 
 import { SafeMathUpgradeable } from "@openzeppelin/contracts-upgradeable/math/SafeMathUpgradeable.sol";
 
+/**
+ * @title DangoMath
+ * @author Dango.Cafe
+ *
+ * Taken from ds-math
+ */
 contract DangoMath {
 
     uint constant WAD = 10 ** 18;

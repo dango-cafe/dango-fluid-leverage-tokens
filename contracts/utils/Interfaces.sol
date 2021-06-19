@@ -566,6 +566,12 @@ interface IPriceOracleGetter {
     function getFallbackOracle() external view returns(address);
 }
 
+/**
+ * @title IFlashLoanReceiver interface
+ * @notice Interface for the Aave fee IFlashLoanReceiver.
+ * @author Aave
+ * @dev implement this interface to develop a flashloan-compatible flashLoanReceiver contract
+ **/
 interface IFlashLoanReceiver {
     function executeOperation(
         address[] calldata assets,
@@ -587,12 +593,24 @@ interface IDebtToken {
     function approveDelegation(address delegatee, uint256 amount) external;
 }
 
-interface IFluidLeverage {
+/**
+ * @title IFluidLeverage interface
+ * @notice Interface for the Fluid Leverage Tokens
+ * @author Dango.Cafe
+ * @dev Use this interface to interact with Dango FLT Systems
+ **/
+interface IFluidLeverage is IERC20 {
     function deposit(uint256 _amt) external;
 
     function withdraw(uint256 _amt) external;
 
-    function __withdrawCollateral(uint256 _amt) external;
+    function targetLeverageRatio() external view returns (uint256);
+
+    function lowerLeverageLimit() external view returns (uint256);
+
+    function upperLeverageLimit() external view returns (uint256);
+
+    function flashloanAdapter() external view returns (address);
 
     function getCurrentLeverRatio() external view returns (uint256 _leverRatio);
 
@@ -600,15 +618,38 @@ interface IFluidLeverage {
 
     function getIndex() external view returns (uint256 _newIndex);
 
+    function mintFee() external view returns (uint256);
+
+    function burnFee() external view returns (uint256);
+
+    function indexPrice() external view returns (uint256);
+
+    function lastRebalancingTime() external view returns (uint256);
+
+    function totalCapacity() external view returns (uint256);
+
+    function rebalancers(address _rebalancer) external view returns (bool);
+
     function COLLATERAL_ASSET() external view returns (IERC20);
 
     function DEBT_ASSET() external view returns (IERC20);
+
+    function __withdrawCollateral(uint256 _amt) external;
 }
 
+/**
+ * @title IFlashloanAdapter interface
+ * @notice Interface for the Dango Flashloan Adapter
+ * @author Dango.Cafe
+ **/
 interface IFlashloanAdapter {
     function executeWithdraw(uint256 _amt) external;
 }
 
+/**
+ * @title ISushiRouter interface
+ * @notice Interface for Sushiswap Router
+ **/
 interface ISushiRouter {
     function swapExactTokensForTokens(
         uint amountIn,

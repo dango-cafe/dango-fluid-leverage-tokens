@@ -34,7 +34,7 @@ async function main() {
   const txCount = await hre.ethers.provider.getTransactionCount(deployerAddress) + 1
   const proxyAddress = '0x' + hre.ethers.utils.keccak256(RLP.encode([deployerAddress, txCount])).slice(12).substring(14)
 
-  const FlashloanAdapter = await ethers.getContractFactory("FlashloanAdapter")
+  const FlashloanAdapter = await ethers.getContractFactory("DangoFlashloanAdapter")
   const flashloanAdapter = await FlashloanAdapter.deploy(
     aaveLendingPoolAddressProvider,
     aaveProtocolDataProvider,
