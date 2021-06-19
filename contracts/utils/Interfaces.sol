@@ -661,3 +661,13 @@ interface ISushiRouter {
 
     function getAmountsOut(uint amountIn, address[] memory path) external view returns (uint[] memory amounts);
 }
+
+/**
+ * @title ITokenIncentives interface
+ * @notice Interface for Aave/Matic incentives contracts
+ **/
+interface ITokenIncentives {
+    function claimRewards(address[] calldata assets, uint256 amount, address to) external;
+
+    function getRewardsBalance(address[] calldata assets, address user) external view returns (uint256);
+}

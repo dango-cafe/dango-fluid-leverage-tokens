@@ -10,7 +10,8 @@ import {
   IFluidLeverage,
   IERC20,
   ISushiRouter,
-  IProtocolDataProvider
+  IProtocolDataProvider,
+  ITokenIncentives
 } from "./utils/Interfaces.sol";
 import { FlashLoanReceiverBase } from "./utils/FlashLoanReceiverBase.sol";
 import { SafeERC20, DataTypes } from "./utils/Libraries.sol";
@@ -32,6 +33,8 @@ contract DangoFlashloanAdapter is FlashLoanReceiverBase, OwnableUpgradeable, Dan
 
   IProtocolDataProvider public immutable dataProvider;                    // Aave Protocol Data Provider instance
   ISushiRouter public immutable sushi;                                    // Sushiswap Router instance
+  ITokenIncentives public immutable incentives;                           // Aave/Matic instance
+  address public immutable incentiveToken;                                // Address of the Aave/Matic
 
   /* ============ State Variables ============ */
 
@@ -85,6 +88,8 @@ contract DangoFlashloanAdapter is FlashLoanReceiverBase, OwnableUpgradeable, Dan
    * @param _addressProvider    Address of Aave Lending Pool Address Provider
    * @param _dataProvider       Address of Aave Protocol Data Provider
    * @param _sushi              Address of Sushiswap router
+   * @param _incentives         Address of Aave/Matic incentives contract
+   * @param _incentiveToken     Address of the incentive token received
    * @param _maxSlippage        Maximum slippage tolerated by the system (in 10e5 base)
    * @param _fluidLeverages     Array of active fluid leverage tokens
    */
@@ -92,6 +97,8 @@ contract DangoFlashloanAdapter is FlashLoanReceiverBase, OwnableUpgradeable, Dan
     ILendingPoolAddressesProvider _addressProvider,
     IProtocolDataProvider _dataProvider,
     ISushiRouter _sushi,
+    ITokenIncentives _incentives,
+    address _incentiveToken,
     uint256 _maxSlippage,
     address[] memory _fluidLeverages
   ) FlashLoanReceiverBase(_addressProvider) {
@@ -102,6 +109,8 @@ contract DangoFlashloanAdapter is FlashLoanReceiverBase, OwnableUpgradeable, Dan
     dataProvider = _dataProvider;
     sushi = _sushi;
     maxSlippage = _maxSlippage;
+    incentives = _incentives;
+    incentiveToken = _incentiveToken;
 
     for (uint256 index = 0; index < _fluidLeverages.length; index++) {
       fluidLeverage[_fluidLeverages[index]] = true;
@@ -211,6 +220,7 @@ contract DangoFlashloanAdapter is FlashLoanReceiverBase, OwnableUpgradeable, Dan
    */
   function _rebalanceUp(DataTypes.FlashloanData memory _data, address _fluidLeverage) internal {
     require(_data.userDepositAmt == 0, "invalid-op");
+    _claimAndConvertToCollateral(_fluidLeverage);
     _swapDebtToCollateral(_data, _fluidLeverage);
   }
 
@@ -226,6 +236,8 @@ contract DangoFlashloanAdapter is FlashLoanReceiverBase, OwnableUpgradeable, Dan
   function _rebalanceDown(DataTypes.FlashloanData memory _data, address _fluidLeverage, uint256 _premium) internal {
     IERC20 _collateral = IERC20(_data.flashAsset);
     IERC20 _debt = IERC20(_data.targetAsset);
+
+    _claimAndConvertToCollateral(_fluidLeverage);
 
     (uint256 _maxDebt, uint256 _received) = _swapCollateralToDebt(_data, _fluidLeverage);
 
@@ -401,6 +413,37 @@ contract DangoFlashloanAdapter is FlashLoanReceiverBase, OwnableUpgradeable, Dan
     emit ConvertCollateralToDebt(
       _fluidLeverage, address(_debt), address(_collateral), _data.flashAmt, _received
     );
+  }
+
+  /**
+   * @notice Converts any claimable rewards into collateral
+   *
+   * @param _fluidLeverage      Address of initiator FLT
+   */
+  function _claimAndConvertToCollateral(address _fluidLeverage) internal {
+    IERC20 _collateral = IFluidLeverage(_fluidLeverage).COLLATERAL_ASSET();
+    IERC20 _debt = IFluidLeverage(_fluidLeverage).DEBT_ASSET();
+
+    address[] memory _assets;
+    (_assets[0],,) = dataProvider.getReserveTokensAddresses(address(_collateral));
+    (,,_assets[1]) = dataProvider.getReserveTokensAddresses(address(_debt));
+
+    if (incentives.getRewardsBalance(_assets, _fluidLeverage) > 0) {
+      incentives.claimRewards(_assets, type(uint256).max, address(this));
+
+      address[] memory _path = paths[incentiveToken][address(_collateral)];
+
+      uint256[] memory _amts = sushi.swapExactTokensForTokens(
+        IERC20(incentiveToken).balanceOf(address(this)), 0, _path, address(this), block.timestamp.add(1800)
+      );
+
+      uint256 _received = _amts[_amts.length - 1];
+
+      _collateral.safeApprove(address(LENDING_POOL), 0);
+      _collateral.safeApprove(address(LENDING_POOL), _received);
+
+      LENDING_POOL.deposit(address(_collateral), _received, _fluidLeverage, 0);
+    }
   }
 
   /* ============ Admin Methods ============ */
