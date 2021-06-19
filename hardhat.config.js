@@ -9,6 +9,7 @@ const ALCHEMY_ID = process.env.ALCHEMY_ID;
 const MORALIS = process.env.MORALIS;
 const ETHERSCAN = process.env.ETHERSCAN;
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
+const INFURA_ID = process.env.INFURA_ID;
 
 
 module.exports = {
@@ -24,8 +25,8 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        url: `https://eth-kovan.alchemyapi.io/v2/${ALCHEMY_ID}`,
-        blockNumber: 25560975,
+        url: `https://speedy-nodes-nyc.moralis.io/${MORALIS}/polygon/mainnet/archive`,
+        blockNumber: 15901846,
       },
       blockGasLimit: 12000000,
     },
@@ -34,7 +35,7 @@ module.exports = {
       accounts: [`0x${PRIVATE_KEY}`]
     },
     polygon: {
-      url: `https://speedy-nodes-nyc.moralis.io/${MORALIS}/polygon/mainnet`,
+      url: `https://polygon-mainnet.infura.io/v3/${INFURA_ID}`,
       accounts: [`0x${PRIVATE_KEY}`]
     }
   },
