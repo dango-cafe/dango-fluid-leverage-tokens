@@ -37,6 +37,9 @@ contract FlashloanAdapter is FlashLoanReceiverBase, OwnableUpgradeable, DangoMat
     address[] memory _fluidLeverages
   ) FlashLoanReceiverBase(_addressProvider) {
     require(_maxSlippage <= 500, "max-slippage-too-high");
+
+    __Ownable_init();
+
     dataProvider = _dataProvider;
     sushi = _sushi;
     maxSlippage = _maxSlippage;
@@ -81,7 +84,7 @@ contract FlashloanAdapter is FlashLoanReceiverBase, OwnableUpgradeable, DangoMat
     IERC20 _collateral = IFluidLeverage(msg.sender).COLLATERAL_ASSET();
     IERC20 _debt = IFluidLeverage(msg.sender).DEBT_ASSET();
 
-    require(_collateral.balanceOf(address(this)) > _amt, "did-not-receive-trade-amt");
+    require(_collateral.balanceOf(address(this)) >= _amt, "did-not-receive-trade-amt");
 
     DataTypes.FlashloanData memory _data;
 
@@ -195,15 +198,20 @@ contract FlashloanAdapter is FlashLoanReceiverBase, OwnableUpgradeable, DangoMat
 
     address[] memory _path = paths[_data.flashAsset][_data.targetAsset];
 
-    uint256 _debtPrice = IFluidLeverage(_fluidLeverage).getDebtPrice();
     uint256 _minAmt;
 
+    // {
+    //   uint256 _debtPrice = IFluidLeverage(_fluidLeverage).getDebtPrice();
+    //   uint256 _amt18 = wdiv(_data.flashAmt, 10 ** (_debt.decimals()));
+    //   uint256 _idealAmt = wmul(_amt18, _debtPrice);
+    //   uint256 _slippageAmt = _idealAmt.mul(maxSlippage).div(10000);
+    //   uint256 _minOut = _idealAmt.sub(_slippageAmt);
+    //   _minAmt = wmul(_minOut, 10 ** (_collateral.decimals()));
+    // }
     {
-      uint256 _amt18 = wdiv(_data.flashAmt, 10 ** (_debt.decimals()));
-      uint256 _idealAmt = wmul(_amt18, _debtPrice);
-      uint256 _slippageAmt = _idealAmt.mul(maxSlippage).div(10000);
-      uint256 _minOut = _idealAmt.sub(_slippageAmt);
-      _minAmt = wmul(_minOut, 10 ** (_collateral.decimals()));
+      uint256[] memory _outAmts = sushi.getAmountsOut(_data.flashAmt, _path);
+      uint256 _slippageAmt = _outAmts[_outAmts.length - 1].mul(maxSlippage).div(10000);
+      _minAmt = _outAmts[_outAmts.length - 1].sub(_slippageAmt);
     }
 
     uint256[] memory _amts = sushi.swapExactTokensForTokens(_data.flashAmt, _minAmt, _path, address(this), block.timestamp.add(1800));
@@ -225,15 +233,21 @@ contract FlashloanAdapter is FlashLoanReceiverBase, OwnableUpgradeable, DangoMat
 
     address[] memory _path = paths[_data.flashAsset][_data.targetAsset];
 
-    uint256 _debtPrice = IFluidLeverage(_fluidLeverage).getDebtPrice();
     uint256 _minAmt;
 
+    // {
+    //   uint256 _debtPrice = IFluidLeverage(_fluidLeverage).getDebtPrice();
+    //   uint256 _amt18 = wdiv(_data.flashAmt, 10 ** (_collateral.decimals()));
+    //   uint256 _idealAmt = wdiv(_amt18, _debtPrice);
+    //   uint256 _slippageAmt = _idealAmt.mul(maxSlippage).div(10000);
+    //   uint256 _minOut = _idealAmt.sub(_slippageAmt);
+    //   _minAmt = wmul(_minOut, 10 ** (_debt.decimals()));
+    // }
+
     {
-      uint256 _amt18 = wdiv(_data.flashAmt, 10 ** (_collateral.decimals()));
-      uint256 _idealAmt = wdiv(_amt18, _debtPrice);
-      uint256 _slippageAmt = _idealAmt.mul(maxSlippage).div(10000);
-      uint256 _minOut = _idealAmt.sub(_slippageAmt);
-      _minAmt = wmul(_minOut, 10 ** (_debt.decimals()));
+      uint256[] memory _outAmts = sushi.getAmountsOut(_data.flashAmt, _path);
+      uint256 _slippageAmt = _outAmts[_outAmts.length - 1].mul(maxSlippage).div(10000);
+      _minAmt = _outAmts[_outAmts.length - 1].sub(_slippageAmt);
     }
 
     uint256[] memory _amts = sushi.swapExactTokensForTokens(_data.flashAmt, _minAmt, _path, address(this), block.timestamp.add(1800));

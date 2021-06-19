@@ -24,8 +24,8 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        url: `https://speedy-nodes-nyc.moralis.io/${MORALIS}/polygon/mainnet/archive`,
-        blockNumber: 25155741,
+        url: `https://eth-kovan.alchemyapi.io/v2/${ALCHEMY_ID}`,
+        blockNumber: 25560975,
       },
       blockGasLimit: 12000000,
     },
@@ -40,6 +40,9 @@ module.exports = {
   },
   etherscan: {
     apiKey: ETHERSCAN
+  },
+  mocha: {
+    timeout: 100 * 1000
   }
 };
 
