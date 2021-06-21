@@ -42,10 +42,10 @@ async function deployFluidLeverage(FLT, collateral, debt) {
 async function main() {
   const FluidLeverage = await ethers.getContractFactory("DangoFluidLeverageToken")
 
-  // const weth_usdc = await deployFluidLeverage(
-  //   FluidLeverage, weth, usdc
-  // )
-  // console.log("WETH/USDC FLT Logic Deployed: ", weth_usdc)
+  const weth_usdc = await deployFluidLeverage(
+    FluidLeverage, weth, usdc
+  )
+  console.log("WETH/USDC FLT Logic Deployed: ", weth_usdc)
 
   const wbtc_usdc = await deployFluidLeverage(
     FluidLeverage, wbtc, usdc

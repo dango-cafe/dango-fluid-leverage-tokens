@@ -421,10 +421,14 @@ contract DangoFlashloanAdapter is FlashLoanReceiverBase, OwnableUpgradeable, Dan
     IFluidLeverage(_fluidLeverage).__claimRewards();
 
     if (IERC20(incentiveToken).balanceOf(address(this)) > 0) {
+      IERC20 _incentiveToken = IERC20(incentiveToken);
+      _incentiveToken.safeApprove(address(sushi), 0);
+      _incentiveToken.safeApprove(address(sushi), _incentiveToken.balanceOf(address(this)));
+
       address[] memory _path = paths[incentiveToken][address(_collateral)];
 
       uint256[] memory _amts = sushi.swapExactTokensForTokens(
-        IERC20(incentiveToken).balanceOf(address(this)), 0, _path, address(this), block.timestamp.add(1800)
+        _incentiveToken.balanceOf(address(this)), 0, _path, address(this), block.timestamp.add(1800)
       );
 
       uint256 _received = _amts[_amts.length - 1];

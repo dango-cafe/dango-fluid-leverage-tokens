@@ -26,4 +26,4 @@ FLTs need to rebalance every 24 hrs to achieve the target leverage ratio. Only w
 
 `DangoFluidLeverageToken` - Main contract of FLT system. All the token methods, deposit, withdraw & rebalance methods are inside this contract
 
-`DangoFlashloanAdapter` - This contracts acts as callback for all flashloan methods, hence all trades happen in this contract. Deployed [here](https://polygonscan.com/address/0x0a796b0dc59324233aa2f4ce2e5fb74b81ff2301)
+`DangoFlashloanAdapter` - This contracts acts as callback for all flashloan methods, hence all trades happen in this contract. Deployed [here](https://polygonscan.com/address/0x9bbE3DCD04684E03469dd2378D79d5adc3f2aD0A)
