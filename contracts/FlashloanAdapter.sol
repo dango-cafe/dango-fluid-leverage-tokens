@@ -33,7 +33,6 @@ contract DangoFlashloanAdapter is FlashLoanReceiverBase, OwnableUpgradeable, Dan
 
   IProtocolDataProvider public immutable dataProvider;                    // Aave Protocol Data Provider instance
   ISushiRouter public immutable sushi;                                    // Sushiswap Router instance
-  ITokenIncentives public immutable incentives;                           // Aave/Matic instance
   address public immutable incentiveToken;                                // Address of the Aave/Matic
 
   /* ============ State Variables ============ */
@@ -88,7 +87,6 @@ contract DangoFlashloanAdapter is FlashLoanReceiverBase, OwnableUpgradeable, Dan
    * @param _addressProvider    Address of Aave Lending Pool Address Provider
    * @param _dataProvider       Address of Aave Protocol Data Provider
    * @param _sushi              Address of Sushiswap router
-   * @param _incentives         Address of Aave/Matic incentives contract
    * @param _incentiveToken     Address of the incentive token received
    * @param _maxSlippage        Maximum slippage tolerated by the system (in 10e5 base)
    * @param _fluidLeverages     Array of active fluid leverage tokens
@@ -97,7 +95,6 @@ contract DangoFlashloanAdapter is FlashLoanReceiverBase, OwnableUpgradeable, Dan
     ILendingPoolAddressesProvider _addressProvider,
     IProtocolDataProvider _dataProvider,
     ISushiRouter _sushi,
-    ITokenIncentives _incentives,
     address _incentiveToken,
     uint256 _maxSlippage,
     address[] memory _fluidLeverages
@@ -109,7 +106,6 @@ contract DangoFlashloanAdapter is FlashLoanReceiverBase, OwnableUpgradeable, Dan
     dataProvider = _dataProvider;
     sushi = _sushi;
     maxSlippage = _maxSlippage;
-    incentives = _incentives;
     incentiveToken = _incentiveToken;
 
     for (uint256 index = 0; index < _fluidLeverages.length; index++) {
@@ -422,15 +418,9 @@ contract DangoFlashloanAdapter is FlashLoanReceiverBase, OwnableUpgradeable, Dan
    */
   function _claimAndConvertToCollateral(address _fluidLeverage) internal {
     IERC20 _collateral = IFluidLeverage(_fluidLeverage).COLLATERAL_ASSET();
-    IERC20 _debt = IFluidLeverage(_fluidLeverage).DEBT_ASSET();
+    IFluidLeverage(_fluidLeverage).__claimRewards();
 
-    address[] memory _assets;
-    (_assets[0],,) = dataProvider.getReserveTokensAddresses(address(_collateral));
-    (,,_assets[1]) = dataProvider.getReserveTokensAddresses(address(_debt));
-
-    if (incentives.getRewardsBalance(_assets, _fluidLeverage) > 0) {
-      incentives.claimRewards(_assets, type(uint256).max, address(this));
-
+    if (IERC20(incentiveToken).balanceOf(address(this)) > 0) {
       address[] memory _path = paths[incentiveToken][address(_collateral)];
 
       uint256[] memory _amts = sushi.swapExactTokensForTokens(

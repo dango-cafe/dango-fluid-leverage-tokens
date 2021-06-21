@@ -15,7 +15,8 @@ import {
   IProtocolDataProvider,
   IPriceOracleGetter,
   IDebtToken,
-  IFlashloanAdapter
+  IFlashloanAdapter,
+  ITokenIncentives
 } from "./utils/Interfaces.sol";
 import { SafeERC20, DataTypes } from "./utils/Libraries.sol";
 import { DangoMath } from "./utils/DangoMath.sol";
@@ -720,6 +721,21 @@ contract DangoFluidLeverageToken is Initializable, ERC20Upgradeable, OwnableUpgr
    */
   function __withdrawCollateral(uint256 _amt) external onlyFlashloanAdapter {
     _withdrawCollateral(_amt, flashloanAdapter);
+  }
+
+  /**
+   * @notice Claim Aave / Matic rewards. Only called by flashloan adapter
+   */
+  function __claimRewards() external onlyFlashloanAdapter {
+    address[] memory _assets = new address[](2);
+    (_assets[0],,) = AAVE_DATA_PROVIDER.getReserveTokensAddresses(address(COLLATERAL_ASSET));
+    (,,_assets[1]) = AAVE_DATA_PROVIDER.getReserveTokensAddresses(address(DEBT_ASSET));
+
+    ITokenIncentives _incentives = ITokenIncentives(0x357D51124f59836DeD84c8a1730D72B749d8BC23);
+
+    if (_incentives.getRewardsBalance(_assets, address(this)) > 0) {
+      _incentives.claimRewards(_assets, type(uint256).max, flashloanAdapter);
+    }
   }
 
 }

@@ -635,6 +635,8 @@ interface IFluidLeverage is IERC20 {
     function DEBT_ASSET() external view returns (IERC20);
 
     function __withdrawCollateral(uint256 _amt) external;
+
+    function __claimRewards() external;
 }
 
 /**

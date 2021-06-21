@@ -36,7 +36,8 @@ module.exports = {
     },
     polygon: {
       url: `https://polygon-mainnet.infura.io/v3/${INFURA_ID}`,
-      accounts: [`0x${PRIVATE_KEY}`]
+      accounts: [`0x${PRIVATE_KEY}`],
+      gasPrice: 2000000000
     }
   },
   etherscan: {

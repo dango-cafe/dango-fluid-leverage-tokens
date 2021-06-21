@@ -1,23 +1,21 @@
 const { ethers } = require("hardhat");
 const { parseEther } = ethers.utils;
 
-async function main() {
-  const aaveLendingPoolAddressProvider = '0x88757f2f99175387aB4C6a4b3067c77A695b0349'
-  const aaveProtocolDataProvider = '0x3c73A5E5785cAC854D468F727c606C07488a29D6'
-  const wbtc = '0xD1B98B6607330172f1D991521145A22BCe793277'
-  const usdc = '0xe22da380ee6B445bb8273C81944ADEB6E8450422'
-  const targetLeverRatio = parseEther('2').toString()
-  const lowerLeverRatio = parseEther('1.7').toString()
-  const upperLeverRatio = parseEther('2.3').toString()
+const aaveLendingPoolAddressProvider = '0xd05e3E715d945B59290df0ae8eF85c1BdB684744'
+const aaveProtocolDataProvider = '0x7551b5D2763519d4e37e8B81929D336De671d46d'
+const wbtc = '0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6'
+const usdc = '0x2791bca1f2de4661ed88a30c99a7a9449aa84174'
+const weth = '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619'
+const targetLeverRatio = parseEther('2').toString()
+const lowerLeverRatio = parseEther('1.7').toString()
+const upperLeverRatio = parseEther('2.3').toString()
 
-  const fluidLevProxy = '0xfe76398e095d30a4e76d31de9379bcab5773e237'
-
-  const FluidLeverage = await ethers.getContractFactory("DangoFluidLeverageToken")
-  const fluidLeverageLogic = await FluidLeverage.deploy(
+async function deployFluidLeverage(FLT, collateral, debt) {
+  const fluidLeverageLogic = await FLT.deploy(
     aaveLendingPoolAddressProvider,
     aaveProtocolDataProvider,
-    wbtc,
-    usdc,
+    collateral,
+    debt,
     targetLeverRatio,
     lowerLeverRatio,
     upperLeverRatio
@@ -25,26 +23,44 @@ async function main() {
 
   await fluidLeverageLogic.deployed()
 
-  console.log("FluidLeverage deployed: ", fluidLeverageLogic.address)
-
-  const AdminUpgradeabilityProxy = await ethers.getContractFactory("AdminUpgradeabilityProxy")
-  const adminUpgradeabilityProxy = AdminUpgradeabilityProxy.attach(fluidLevProxy)
-
-  const tx = await adminUpgradeabilityProxy.upgradeTo(fluidLeverageLogic.address)
-  await tx.wait()
-
   await hre.run("verify:verify", {
     address: fluidLeverageLogic.address,
     constructorArguments: [
       aaveLendingPoolAddressProvider,
       aaveProtocolDataProvider,
-      wbtc,
-      usdc,
+      collateral,
+      debt,
       targetLeverRatio,
       lowerLeverRatio,
       upperLeverRatio
     ]
   })
+
+  return fluidLeverageLogic.address
+}
+
+async function main() {
+  const FluidLeverage = await ethers.getContractFactory("DangoFluidLeverageToken")
+
+  // const weth_usdc = await deployFluidLeverage(
+  //   FluidLeverage, weth, usdc
+  // )
+  // console.log("WETH/USDC FLT Logic Deployed: ", weth_usdc)
+
+  const wbtc_usdc = await deployFluidLeverage(
+    FluidLeverage, wbtc, usdc
+  )
+  console.log("WBTC/USDC FLT Logic Deployed: ", wbtc_usdc)
+
+  const weth_wbtc = await deployFluidLeverage(
+    FluidLeverage, weth, wbtc
+  )
+  console.log("WETH/WBTC FLT Logic Deployed: ", weth_wbtc)
+
+  const wbtc_weth = await deployFluidLeverage(
+    FluidLeverage, wbtc, weth
+  )
+  console.log("WBTC/WETH FLT Logic Deployed: ", wbtc_weth)
 }
 
 main()
