@@ -11,7 +11,7 @@ Following FLTs are live on Polygon!
 | [ETH/BTC 2x Fluid Leverage Token](https://polygonscan.com/token/0x0093660a2f58c0c38ce2ce0f894c86f9011478ea) | WETH           | WBTC     | 2x                 |
 | [BTC/ETH 2x Fluid Leverage Token](https://polygonscan.com/token/0x540fbc594c455a8af6d238c16af2511c37cc0e9b) | WBTC           | WETH     | 2x                 |
 | [ETH 2x Short Fluid Leverage Token](https://polygonscan.com/token/0x00405F7B768a9A6B81e8060a17f0550501AcF6bE) | USDC           | WETH     | 2x                 |
-| [BTC 2x Short Fluid Leverage Token](https://polygonscan.com/token/0x540fbc594c455a8af6d238c16af2511c37cc0e9b) | USDC           | WBTC     | 2x                 |
+| [BTC 2x Short Fluid Leverage Token](https://polygonscan.com/token/0x381659B5adfC2435181D09f1DaBbb64cFa5efA7F) | USDC           | WBTC     | 2x                 |
 
 ### Governance / Owner Privileges
 
